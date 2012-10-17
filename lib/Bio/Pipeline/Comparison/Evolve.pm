@@ -27,6 +27,10 @@ A Hash containing the mutation probablity of different bases. Can pass in new va
 
 The probability of a SNP occuring. Set by default but can be overridden.
 
+=method _vcf_writer
+
+A VCF file writer is created by default but you can pass one in if you like.
+
 =method _evolve_base
 Take in a base and randomly evolve it.
 
@@ -39,13 +43,14 @@ Take in a base and randomly evolve it.
 
 use Moose;
 use Bio::SeqIO;
+use Bio::Pipeline::Comparison::VCFWriter;
 
 has 'input_filename'  => ( is => 'ro', isa => 'Str', required => 1 );
 has 'output_filename' => ( is => 'ro', isa => 'Str', lazy => 1, builder => '_build_output_filename' );
 
 has '_base_change_probability'  => ( is => 'ro', isa => 'HashRef', lazy    => 1, builder => '_build__base_change_probability' );
 has '_snp_rate'                 => ( is => 'ro', isa => 'Num',     default => '0.0005' );
-
+has '_vcf_writer'               => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::VCFWriter', lazy => 1, builder => '_build__vcf_writer' );
 
 # placeholder for proper evolutionary model
 sub evolve {
@@ -57,6 +62,8 @@ sub evolve {
         my $sequence_obj = Bio::Seq->new( -display_id => $seq->display_id, -seq => $self->_introduce_snps($seq) );
         $out_fasta_obj->write_seq($sequence_obj);
     }
+    
+    $self->_vcf_writer->create_file();
     return $self;
 }
 
@@ -65,7 +72,13 @@ sub _introduce_snps {
     my ( $self, $sequence_obj ) = @_;
     my $evolved_sequence = $sequence_obj->seq();
     for ( my $i =0; $i < length($evolved_sequence) ; $i++ ) {
-      substr($evolved_sequence, $i, 1) = $self->_evolve_base(substr($evolved_sequence, $i, 1));
+      my $original_base = substr($evolved_sequence, $i, 1);
+      my $evolved_base  = $self->_evolve_base(substr($evolved_sequence, $i, 1));
+      substr($evolved_sequence, $i, 1) = $evolved_base;
+      if($original_base ne  $evolved_base)
+      {
+        $self->_vcf_writer->add_snp($i,$original_base, $evolved_base );
+      }
     }
 
     return $evolved_sequence;
@@ -96,6 +109,11 @@ sub _evolve_base
   return $base; 
 }
 
+sub _build__vcf_writer
+{
+  my ($self) = @_;
+  Bio::Pipeline::Comparison::VCFWriter->new(output_filename => join('.',($self->output_filename,'vcf','gz')));
+}
 
 sub _build_output_filename {
     my ($self) = @_;
@@ -105,7 +123,6 @@ sub _build_output_filename {
 sub _build__base_change_probability {
     my ($self) = @_;
 
-    # values taken from an evolver example
     my $change_probability = {
         'A' => {
             'C' => 0.25,
