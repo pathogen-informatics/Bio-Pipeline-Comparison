@@ -1,0 +1,51 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+evolve_genome 
+
+=head1 SYNOPSIS
+
+evolve_genome - Given a reference genome, introduce changes
+
+=head1 DESCRIPTION
+Given a reference genome, introduce changes
+=head1 CONTACT
+
+path-help@sanger.ac.uk
+
+=head1 METHODS
+
+=cut
+
+package Bio::Pipeline::Comparison::EvolveGenome
+
+use Moose;
+use Getopt::Long;
+use Cwd 'abs_path';
+use Bio::Pipeline::Comparison;
+use Bio::Pipeline::Comparison::Evolve;
+
+my ( $output_file, $help );
+
+GetOptions(
+    'o|output=s'          => \$output_file,
+    'h|help'              => \$help,
+);
+
+my $reference_filename = $ARGV[0];
+
+( defined($reference_filename) && ( -e $reference_filename ) && !$help ) or die <<USAGE;
+Usage: evolve_genome [options]
+Given a reference genome, introduce changes
+
+evolve_genome -o output.fa my_reference.fa
+
+# This help message
+evolve_genome -h
+
+USAGE
+
+$reference_filename  = abs_path($reference_filename);
+
+Bio::Pipeline::Comparison::Evolve->new(input_filename => $reference_filename)->evolve;
