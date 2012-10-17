@@ -48,9 +48,9 @@ use Bio::Pipeline::Comparison::VCFWriter;
 has 'input_filename'  => ( is => 'ro', isa => 'Str', required => 1 );
 has 'output_filename' => ( is => 'ro', isa => 'Str', lazy => 1, builder => '_build_output_filename' );
 
-has '_base_change_probability'  => ( is => 'ro', isa => 'HashRef', lazy    => 1, builder => '_build__base_change_probability' );
-has '_snp_rate'                 => ( is => 'ro', isa => 'Num',     default => '0.0005' );
-has '_vcf_writer'               => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::VCFWriter', lazy => 1, builder => '_build__vcf_writer' );
+has '_base_change_probability' => ( is => 'ro', isa => 'HashRef', lazy => 1, builder => '_build__base_change_probability' );
+has '_snp_rate'                => ( is => 'ro', isa => 'Num', default => '0.0005' );
+has '_vcf_writer'              => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::VCFWriter', lazy => 1, builder => '_build__vcf_writer' );
 
 # placeholder for proper evolutionary model
 sub evolve {
@@ -62,57 +62,52 @@ sub evolve {
         my $sequence_obj = Bio::Seq->new( -display_id => $seq->display_id, -seq => $self->_introduce_snps($seq) );
         $out_fasta_obj->write_seq($sequence_obj);
     }
-    
+
     $self->_vcf_writer->create_file();
     return $self;
 }
 
-
 sub _introduce_snps {
     my ( $self, $sequence_obj ) = @_;
     my $evolved_sequence = $sequence_obj->seq();
-    for ( my $i =0; $i < length($evolved_sequence) ; $i++ ) {
-      my $original_base = substr($evolved_sequence, $i, 1);
-      my $evolved_base  = $self->_evolve_base(substr($evolved_sequence, $i, 1));
-      substr($evolved_sequence, $i, 1) = $evolved_base;
-      if($original_base ne  $evolved_base)
-      {
-        $self->_vcf_writer->add_snp($i,$original_base, $evolved_base );
-      }
+    for ( my $i = 0 ; $i < length($evolved_sequence) ; $i++ ) {
+        my $original_base = substr( $evolved_sequence, $i, 1 );
+        my $evolved_base = $self->_evolve_base( substr( $evolved_sequence, $i, 1 ) );
+        substr( $evolved_sequence, $i, 1 ) = $evolved_base;
+        if ( $original_base ne $evolved_base ) {
+            $self->_vcf_writer->add_snp( $i, $original_base, $evolved_base );
+        }
     }
 
     return $evolved_sequence;
 }
 
-sub _evolve_base
-{
-  my ($self, $base) = @_;
-  if(rand(1) <= $self->_snp_rate )
-  {
-    
-    if(defined($self->_base_change_probability->{uc($base)}))
-    {
-      my $found_base_probabilities  = $self->_base_change_probability->{uc($base)};
-      my $base_rand_number = rand(1);
-      my $lower_band = 0;
-      for my $replacement_base ( keys %$found_base_probabilities)
-      {
-        
-        if($base_rand_number >= $lower_band && $base_rand_number <  $lower_band + $found_base_probabilities->{$replacement_base})
-        {
-          return $replacement_base;
+sub _evolve_base {
+    my ( $self, $base ) = @_;
+    if ( rand(1) <= $self->_snp_rate ) {
+
+        if ( defined( $self->_base_change_probability->{ uc($base) } ) ) {
+            my $found_base_probabilities = $self->_base_change_probability->{ uc($base) };
+            my $base_rand_number         = rand(1);
+            my $lower_band               = 0;
+            for my $replacement_base ( keys %$found_base_probabilities ) {
+
+                if (   $base_rand_number >= $lower_band
+                    && $base_rand_number < $lower_band + $found_base_probabilities->{$replacement_base} )
+                {
+                    return $replacement_base;
+                }
+                $lower_band += $found_base_probabilities->{$replacement_base};
+            }
         }
-        $lower_band += $found_base_probabilities->{$replacement_base};
-      }
     }
-  }
-  return $base; 
+    return $base;
 }
 
-sub _build__vcf_writer
-{
-  my ($self) = @_;
-  Bio::Pipeline::Comparison::VCFWriter->new(output_filename => join('.',($self->output_filename,'vcf','gz')));
+sub _build__vcf_writer {
+    my ($self) = @_;
+    Bio::Pipeline::Comparison::VCFWriter->new(
+        output_filename => join( '.', ( $self->output_filename, 'vcf', 'gz' ) ) );
 }
 
 sub _build_output_filename {

@@ -32,70 +32,75 @@ Optional input parameter. This is the name that goes in the column of the VCF fi
 =cut
 
 use Moose;
+use Bio::Pipeline::Comparison::Types;
 use Vcf;
 
 has 'output_filename' => ( is => 'ro', isa => 'Str', required => 1 );
-has 'evolved_name'    => ( is => 'ro', isa => 'Str', lazy => 1, builder => '_build_evolved_name');
+has 'evolved_name'    => ( is => 'ro', isa => 'Str', lazy => 1, builder => '_build_evolved_name' );
 
-has '_output_fh'      => ( is => 'ro', lazy => 1, builder => '_build_output_fh' );
-has '_vcf'            => ( is => 'ro', isa => 'Vcf',                lazy => 1, builder => '_build__vcf' );
+has '_output_fh' => ( is => 'ro', lazy => 1, builder => '_build_output_fh' );
+has '_vcf'       => ( is => 'ro', isa => 'Vcf', lazy => 1, builder => '_build__vcf' );
+has '_vcf_lines' => ( is => 'ro', isa => 'ArrayRef', default => sub { [] } );
 
-has '_vcf_lines'      => ( is => 'ro', isa => 'ArrayRef',  default => sub { [] } );
+has 'bgzip_exec' => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::Executable', default => 'bgzip' );
+has 'tabix_exec' => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::Executable', default => 'tabix' );
 
-sub _build_output_fh
-{
-  my ($self) = @_;
-  open(my $output_fh, '|-', "bgzip -c > ".$self->output_filename);
-  return $output_fh;
+sub _build_output_fh {
+    my ($self) = @_;
+    open( my $output_fh, '|-', $self->bgzip_exec." -c > " . $self->output_filename );
+    return $output_fh;
+}
+
+sub _build__vcf {
+    my ($self) = @_;
+    Vcf->new();
+}
+
+sub _build_evolved_name {
+    my ($self) = @_;
+    my $evolved_name = $self->output_filename;
+    $evolved_name =~ s!.vcf.gz!!i;
+    return $evolved_name;
+}
+
+sub _construct_header {
+    my ($self) = @_;
+
+    # Get the header of the output VCF ready
+    $self->_vcf->add_columns( ( $self->output_filename ) );
+    print { $self->_output_fh } ( $self->_vcf->format_header() );
+}
+
+sub _create_index {
+    my ($self) = @_;
+    my $cmd = join(' ',($self->tabix_exec, "-p vcf", "-f",$self->output_filename));
+    system($cmd);
 }
 
 
-sub _build__vcf
-{
-  my ($self) = @_;
-  Vcf->new();
+sub add_snp {
+    my ( $self, $position, $reference_base, $base ) = @_;
+    my %snp;
+    $snp{POS}    = $position;
+    $snp{ALT}    = [$base];
+    $snp{REF}    = $reference_base;
+    $snp{ID}     = '.';
+    $snp{FORMAT} = [];
+    $snp{CHROM}  = 1;
+    $snp{QUAL}   = 1;
+    push( @{ $self->_vcf_lines }, \%snp );
 }
 
-sub _construct_header
-{
-  my ($self) = @_;
-  # Get the header of the output VCF ready
-  $self->_vcf->add_columns(($self->output_filename));
-  print {$self->_output_fh} ($self->_vcf->format_header());  
-}
+sub create_file {
+    my ($self) = @_;
+    $self->_construct_header;
 
-sub _build_evolved_name
-{
-  my ($self) = @_;
-  my $evolved_name = $self->output_filename;
-  $evolved_name =~ s!.vcf.gz!!i;
-  return $evolved_name;
-}
-
-sub add_snp
-{
-  my ($self,$position, $reference_base, $base) = @_;
-  my %snp;
-  $snp{POS}    = $position;
-  $snp{ALT}    = [$base];
-  $snp{REF}    = $reference_base;
-  $snp{ID}     = '.';
-  $snp{FORMAT} = [];
-  $snp{CHROM}  = 1;
-  $snp{QUAL}   = 1;
-  push(@{$self->_vcf_lines}, \%snp)
-}
-
-sub create_file
-{
-  my ($self) = @_;
-  $self->_construct_header;
-  
-  for my $vcf_line (@{$self->_vcf_lines})
-  {
-    print {$self->_output_fh} ($self->_vcf->format_line($vcf_line));
-  }
-  1;
+    for my $vcf_line ( @{ $self->_vcf_lines } ) {
+        print { $self->_output_fh } ( $self->_vcf->format_line($vcf_line) );
+    }
+    close($self->_output_fh );
+    $self->_create_index();
+    1;
 }
 
 no Moose;
