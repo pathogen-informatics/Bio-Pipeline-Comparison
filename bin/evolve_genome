@@ -21,11 +21,12 @@ use File::Path 2.07 qw(make_path);
 use Bio::Pipeline::Comparison;
 use Bio::Pipeline::Comparison::Generate::Evolve;
 
-my ( $output_file, $help );
+my ($number_of_genomes, $create_archive, $help );
 
 GetOptions(
-    'o|output=s'          => \$output_file,
-    'h|help'              => \$help,
+    'n|number_of_genomes=i' => \$number_of_genomes,
+    'a|create_archive'      => \$create_archive,
+    'h|help'                => \$help,
 );
 
 my $reference_filename = $ARGV[0];
@@ -34,7 +35,14 @@ my $reference_filename = $ARGV[0];
 Usage: evolve_genome [options]
 Given a reference genome, introduce changes
 
-evolve_genome -o output.fa my_reference.fa
+# Create 1 evolved genome
+evolve_genome my_reference.fa
+
+# Specify the number of evolved genomes
+evolve_genome -n 10 my_reference.fa
+
+# Create an archive (tar and gzipped) of the reference, evolved genomes and VCFs
+evolve_genome -a my_reference.fa
 
 # This help message
 evolve_genome -h
@@ -42,5 +50,12 @@ evolve_genome -h
 USAGE
 
 $reference_filename  = abs_path($reference_filename);
+$number_of_genomes ||= 1;
 
-Bio::Pipeline::Comparison::Generate::Evolve->new(input_filename => $reference_filename)->evolve;
+my $evolved_set = Bio::Pipeline::Comparison::Generate::EvolvedSet->new(input_filename => $reference_filename, number_of_genomes => $number_of_genomes);
+$evolved_set->evolve;
+
+if(defined($create_archive))
+{
+   $evolved_set->create_archive;
+}
