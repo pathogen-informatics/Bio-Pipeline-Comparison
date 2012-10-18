@@ -1,4 +1,4 @@
-package Bio::Pipeline::Comparison::VCFWriter;
+package Bio::Pipeline::Comparison::Generate::VCFWriter;
 
 # ABSTRACT: Create a VCF with the differences between a reference and a single evolved genome. Outputs a gzipped VCF file and a tabix file.
 
@@ -6,8 +6,8 @@ package Bio::Pipeline::Comparison::VCFWriter;
 
 Create a VCF with the differences between a reference and a single evolved genome
 
-use Bio::Pipeline::Comparison::VCFWriter;
-my $obj = Bio::Pipeline::Comparison::VCFWriter->new(output_filename => 'my_snps.vcf.gz');
+use Bio::Pipeline::Comparison::Generate::VCFWriter;
+my $obj = Bio::Pipeline::Comparison::Generate::VCFWriter->new(output_filename => 'my_snps.vcf.gz');
 $obj->add_snp(1234, 'C', 'A');
 $obj->add_snp(1234, 'T', 'A');
 $obj->create_file();

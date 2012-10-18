@@ -5,10 +5,10 @@ BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
     use Test::Most;
-    use_ok('Bio::Pipeline::Comparison::VCFWriter');
+    use_ok('Bio::Pipeline::Comparison::Generate::VCFWriter');
 }
 
-ok( my $obj = Bio::Pipeline::Comparison::VCFWriter->new( output_filename => 'my_snps.vcf.gz' ),
+ok( my $obj = Bio::Pipeline::Comparison::Generate::VCFWriter->new( output_filename => 'my_snps.vcf.gz' ),
     'Initialise VCF writer' );
 ok( $obj->add_snp( 1234, 'T', 'A' ), 'Add a SNP' );
 ok( $obj->add_snp( 1345,  'T', 'C' ), 'Add another SNP' );

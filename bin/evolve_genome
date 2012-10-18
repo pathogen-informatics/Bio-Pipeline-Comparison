@@ -1,30 +1,25 @@
 #!/usr/bin/env perl
 
-=head1 NAME
-
-evolve_genome 
-
+package Bio::Pipeline::Comparison::EvolveGenome;
+# ABSTRACT: Take in a reference genome and evolve it.
+# PODNAME: evolve_genome
 =head1 SYNOPSIS
 
-evolve_genome - Given a reference genome, introduce changes
+Take in a reference genome and evolve it.
 
-=head1 DESCRIPTION
-Given a reference genome, introduce changes
-=head1 CONTACT
+=head1 SEE ALSO
 
-path-help@sanger.ac.uk
-
-=head1 METHODS
+=for :list
+* L<Bio::Pipeline::Comparison>
 
 =cut
-
-package Bio::Pipeline::Comparison::EvolveGenome
 
 use Moose;
 use Getopt::Long;
 use Cwd 'abs_path';
+use File::Path 2.07 qw(make_path);
 use Bio::Pipeline::Comparison;
-use Bio::Pipeline::Comparison::Evolve;
+use Bio::Pipeline::Comparison::Generate::Evolve;
 
 my ( $output_file, $help );
 
@@ -48,4 +43,4 @@ USAGE
 
 $reference_filename  = abs_path($reference_filename);
 
-Bio::Pipeline::Comparison::Evolve->new(input_filename => $reference_filename)->evolve;
+Bio::Pipeline::Comparison::Generate::Evolve->new(input_filename => $reference_filename)->evolve;

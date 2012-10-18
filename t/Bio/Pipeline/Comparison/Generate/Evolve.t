@@ -5,11 +5,11 @@ BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
     use Test::Most;
-    use_ok('Bio::Pipeline::Comparison::Evolve');
+    use_ok('Bio::Pipeline::Comparison::Generate::Evolve');
 }
 
 # randomly evolve
-ok( my $obj = Bio::Pipeline::Comparison::Evolve->new( input_filename => 't/data/reference.fa', _snp_rate => 0.1 ),
+ok( my $obj = Bio::Pipeline::Comparison::Generate::Evolve->new( input_filename => 't/data/reference.fa', _snp_rate => 0.1 ),
     'initalise randome evolution' );
 ok( $obj->evolve(), 'randomly evolve the genome' );
 is( 't/data/reference.fa.evolved.fa', $obj->output_filename, 'Default output name' );
@@ -21,7 +21,7 @@ my $base_change_probability = {
 };
 
 ok(
-    $obj = Bio::Pipeline::Comparison::Evolve->new(
+    $obj = Bio::Pipeline::Comparison::Generate::Evolve->new(
         input_filename           => 't/data/reference_only_CA.fa',
         _snp_rate                => 1,
         _base_change_probability => $base_change_probability

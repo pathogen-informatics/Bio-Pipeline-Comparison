@@ -1,4 +1,4 @@
-package Bio::Pipeline::Comparison::Evolve;
+package Bio::Pipeline::Comparison::Generate::Evolve;
 
 # ABSTRACT: Take in a reference genome and evolve it.
 
@@ -6,8 +6,8 @@ package Bio::Pipeline::Comparison::Evolve;
 
 Take in a reference genome and evolve it.
 
-use Bio::Pipeline::Comparison::Evolve;
-my $obj = Bio::Pipeline::Comparison::Evolve->new(input_filename => 'reference.fa');
+use Bio::Pipeline::Comparison::Generate::Evolve;
+my $obj = Bio::Pipeline::Comparison::Generate::Evolve->new(input_filename => 'reference.fa');
 $obj->evolve;
 $obj->output_filename;
 
@@ -43,14 +43,15 @@ Take in a base and randomly evolve it.
 
 use Moose;
 use Bio::SeqIO;
-use Bio::Pipeline::Comparison::VCFWriter;
+use Bio::Pipeline::Comparison::Generate::VCFWriter;
 
 has 'input_filename'  => ( is => 'ro', isa => 'Str', required => 1 );
 has 'output_filename' => ( is => 'ro', isa => 'Str', lazy => 1, builder => '_build_output_filename' );
+has 'vcf_output_filename' => ( is => 'ro', isa => 'Str', lazy => 1, builder => '_build_vcf_output_filename' );
 
 has '_base_change_probability' => ( is => 'ro', isa => 'HashRef', lazy => 1, builder => '_build__base_change_probability' );
-has '_snp_rate'                => ( is => 'ro', isa => 'Num', default => '0.0005' );
-has '_vcf_writer'              => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::VCFWriter', lazy => 1, builder => '_build__vcf_writer' );
+has '_snp_rate'                => ( is => 'ro', isa => 'Num', default => '0.005' );
+has '_vcf_writer'              => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::Generate::VCFWriter', lazy => 1, builder => '_build__vcf_writer' );
 
 # placeholder for proper evolutionary model
 sub evolve {
@@ -106,8 +107,14 @@ sub _evolve_base {
 
 sub _build__vcf_writer {
     my ($self) = @_;
-    Bio::Pipeline::Comparison::VCFWriter->new(
-        output_filename => join( '.', ( $self->output_filename, 'vcf', 'gz' ) ) );
+    Bio::Pipeline::Comparison::Generate::VCFWriter->new(
+        output_filename => $self->vcf_output_filename);
+}
+
+sub _build_vcf_output_filename
+{
+  my ($self) = @_;
+  join( '.', ( $self->output_filename, 'vcf', 'gz' ) );
 }
 
 sub _build_output_filename {
