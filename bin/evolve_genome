@@ -1,36 +1,33 @@
 #!/usr/bin/env perl
 
-=head1 NAME
-
-evolve_genome 
-
+package Bio::Pipeline::Comparison::EvolveGenome;
+# ABSTRACT: Take in a reference genome and evolve it.
+# PODNAME: evolve_genome
 =head1 SYNOPSIS
 
-evolve_genome - Given a reference genome, introduce changes
+Take in a reference genome and evolve it.
 
-=head1 DESCRIPTION
-Given a reference genome, introduce changes
-=head1 CONTACT
+=head1 SEE ALSO
 
-path-help@sanger.ac.uk
-
-=head1 METHODS
+=for :list
+* L<Bio::Pipeline::Comparison>
 
 =cut
 
-package Bio::Pipeline::Comparison::EvolveGenome
-
+BEGIN { unshift( @INC, '../lib' ) }
 use Moose;
 use Getopt::Long;
 use Cwd 'abs_path';
+use File::Path qw(make_path);
 use Bio::Pipeline::Comparison;
-use Bio::Pipeline::Comparison::Evolve;
+use Bio::Pipeline::Comparison::Generate::EvolvedSet;
 
-my ( $output_file, $help );
+my ($number_of_genomes, $create_archive, $help );
 
 GetOptions(
-    'o|output=s'          => \$output_file,
-    'h|help'              => \$help,
+    'n|number_of_genomes=i' => \$number_of_genomes,
+    'a|create_archive'      => \$create_archive,
+    'h|help'                => \$help,
 );
 
 my $reference_filename = $ARGV[0];
@@ -39,7 +36,14 @@ my $reference_filename = $ARGV[0];
 Usage: evolve_genome [options]
 Given a reference genome, introduce changes
 
-evolve_genome -o output.fa my_reference.fa
+# Create 1 evolved genome
+evolve_genome my_reference.fa
+
+# Specify the number of evolved genomes
+evolve_genome -n 10 my_reference.fa
+
+# Create an archive (tar and gzipped) of the reference, evolved genomes and VCFs
+evolve_genome -a my_reference.fa
 
 # This help message
 evolve_genome -h
@@ -47,5 +51,12 @@ evolve_genome -h
 USAGE
 
 $reference_filename  = abs_path($reference_filename);
+$number_of_genomes ||= 1;
 
-Bio::Pipeline::Comparison::Evolve->new(input_filename => $reference_filename)->evolve;
+my $evolved_set = Bio::Pipeline::Comparison::Generate::EvolvedSet->new(input_filename => $reference_filename, number_of_genomes => $number_of_genomes);
+$evolved_set->evolve;
+
+if(defined($create_archive))
+{
+   $evolved_set->create_archive;
+}

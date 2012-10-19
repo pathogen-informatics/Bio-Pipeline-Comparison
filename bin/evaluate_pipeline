@@ -1,0 +1,68 @@
+#!/usr/bin/env perl
+
+package Bio::Pipeline::Comparison::EvolveGenome;
+# ABSTRACT: Take in a VCFs of known variants and observed variants and output a report
+# PODNAME: evaluate_pipeline
+=head1 SYNOPSIS
+
+Take in a VCFs of known variants and observed variants and output a report.
+
+=head1 SEE ALSO
+
+=for :list
+* L<Bio::Pipeline::Comparison>
+
+=cut
+
+BEGIN { unshift( @INC, '../lib' ) }
+use Moose;
+use Getopt::Long;
+use Bio::Pipeline::Comparison;
+use Bio::Pipeline::Comparison::Report::InputParameters;
+
+my ($known_variants, $observed_variants, $help );
+
+GetOptions(
+    'k|known_variants=s@'      => \$known_variants,
+    'o|observed_variants=s@'   => \$observed_variants,
+    'h|help'                => \$help,
+);
+
+# check all the input files exist
+my $input_files_exist = 1;
+for my $input_file (@{$known_variants})
+{
+  $input_files_exist = 0 unless( -e $input_file);
+}
+for my $input_file (@{$observed_variants})
+{
+  $input_files_exist = 0 unless( -e $input_file);
+}
+
+( ($input_files_exist == 1) && !$help ) or die <<USAGE;
+Usage: evaluate_pipeline [options]
+Take in a VCFs of known variants and observed variants, then output a report.
+
+# Compare 1 pair of files
+evaluate_pipeline -k known.1.vcf.gz -o observed.1.vcf.gz
+
+# Compare 1 to multiple observed files
+evaluate_pipeline -k known.1.vcf.gz -o observed.1.vcf.gz observed.2.vcf.gz observed.3.vcf.gz 
+
+# Compare multiple known to multiple observed. Pairs are compared based on the order.
+evaluate_pipeline -k known.1.vcf.gz known.2.vcf.gz known.3.vcf.gz  -o observed.1.vcf.gz observed.2.vcf.gz observed.3.vcf.gz 
+
+
+# This help message
+evaluate_pipeline -h
+
+USAGE
+
+
+my $input_parameters = Bio::Pipeline::Comparison::Report::InputParameters->new(
+  known_variant_filenames => $known_variants, 
+  observed_variant_filenames => $observed_variants
+);
+$input_parameters->known_to_observed_mappings();
+
+
