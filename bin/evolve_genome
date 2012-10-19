@@ -14,12 +14,13 @@ Take in a reference genome and evolve it.
 
 =cut
 
+BEGIN { unshift( @INC, '../lib' ) }
 use Moose;
 use Getopt::Long;
 use Cwd 'abs_path';
-use File::Path 2.07 qw(make_path);
+use File::Path qw(make_path);
 use Bio::Pipeline::Comparison;
-use Bio::Pipeline::Comparison::Generate::Evolve;
+use Bio::Pipeline::Comparison::Generate::EvolvedSet;
 
 my ($number_of_genomes, $create_archive, $help );
 

@@ -31,6 +31,7 @@ ok(
 ok( $obj->evolve(), 'evolve the genome with known values' );
 
 compare_files( 't/data/reference_only_CA.fa.evolved.fa', 't/data/expected_reference_only_CA.fa' );
+compare_files( 't/data/reference_only_CA.fa.evolved.fa.vcf.gz', 't/data/expected_reference_only_CA.vcf.gz' );
 
 unlink('t/data/reference.fa.evolved.fa');
 unlink('t/data/reference.fa.evolved.fa.vcf.gz');
@@ -46,8 +47,23 @@ sub compare_files {
     ok( ( -e $actual_file ),   ' results file exist' );
     ok( ( -e $expected_file ), " $expected_file expected file exist" );
     local $/ = undef;
-    open( EXPECTED, $expected_file );
-    open( ACTUAL,   $actual_file );
+    
+    if($expected_file =~ /gz$/)
+    {
+      open( EXPECTED, "gunzip -c ".$expected_file.'|' );
+    }
+    else
+    {
+      open( EXPECTED, $expected_file );
+    }
+    if($actual_file =~ /gz$/)
+    {
+      open( ACTUAL,   "gunzip -c ".$actual_file.'|');
+    }
+    else
+    {
+      open( ACTUAL,   $actual_file );
+    }
     my $expected_line = <EXPECTED>;
     my $actual_line   = <ACTUAL>;
 

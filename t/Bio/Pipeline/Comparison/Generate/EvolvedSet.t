@@ -15,7 +15,8 @@ ok(my $obj = Bio::Pipeline::Comparison::Generate::EvolvedSet->new(
 ), 'initialise creating a set of evolved genomes with default output directory');
 ok($obj->evolve, 'Create the evolved genomes');
 
-ok((-e $obj->create_archive()),'Create a tgz archive');
+ok(($obj->create_archive()),'Create a tgz archive');
+ok((-e 'reference.tgz'), 'Check the archive exists'); 
 
 ok((-d 't/data/reference'), 'default output directory exists');
 ok((-d 't/data/reference/evolved_references'), 'evolved references directory');

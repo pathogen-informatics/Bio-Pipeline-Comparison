@@ -32,6 +32,7 @@ Optional input parameter. This is the name that goes in the column of the VCF fi
 =cut
 
 use Moose;
+use File::Basename;
 use Bio::Pipeline::Comparison::Types;
 use Vcf;
 
@@ -60,14 +61,15 @@ sub _build_evolved_name {
     my ($self) = @_;
     my $evolved_name = $self->output_filename;
     $evolved_name =~ s!.vcf.gz!!i;
-    return $evolved_name;
+    my ( $base_filename, $directories, $suffix ) = fileparse( $evolved_name, qr/\.[^.]*/ );
+    return $base_filename;
 }
 
 sub _construct_header {
     my ($self) = @_;
 
     # Get the header of the output VCF ready
-    $self->_vcf->add_columns( ( $self->output_filename ) );
+    $self->_vcf->add_columns( ( $self->evolved_name ) );
     print { $self->_output_fh } ( $self->_vcf->format_header() );
 }
 
@@ -80,14 +82,16 @@ sub _create_index {
 
 sub add_snp {
     my ( $self, $position, $reference_base, $base ) = @_;
+    
+    #position here should be from the evolved reference (update when indels included).
     my %snp;
     $snp{POS}    = $position;
-    $snp{ALT}    = [$base];
-    $snp{REF}    = $reference_base;
+    $snp{ALT}    = [$reference_base];
+    $snp{REF}    = $base;
     $snp{ID}     = '.';
-    $snp{FORMAT} = [];
     $snp{CHROM}  = 1;
     $snp{QUAL}   = 1;
+
     push( @{ $self->_vcf_lines }, \%snp );
 }
 
