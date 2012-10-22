@@ -23,9 +23,9 @@ use Bio::Pipeline::Comparison::Report::InputParameters;
 my ($known_variants, $observed_variants, $help );
 
 GetOptions(
-    'k|known_variants=s@'      => \$known_variants,
-    'o|observed_variants=s@'   => \$observed_variants,
-    'h|help'                => \$help,
+    'k|known_variants=s@'    => \$known_variants,
+    'o|observed_variants=s@' => \$observed_variants,
+    'h|help'                 => \$help,
 );
 
 # check all the input files exist
@@ -64,5 +64,17 @@ my $input_parameters = Bio::Pipeline::Comparison::Report::InputParameters->new(
   observed_variant_filenames => $observed_variants
 );
 $input_parameters->known_to_observed_mappings();
+
+# compare each pair with vcf-compare
+# save the output stats somewhere
+# merge the results 
+# report on false positives and false negatives
+# 
+
+
+
+
+
+
 
 

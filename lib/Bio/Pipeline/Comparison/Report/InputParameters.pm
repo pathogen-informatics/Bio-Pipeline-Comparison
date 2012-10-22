@@ -22,15 +22,39 @@ Returns an array of hashes with pairs of filenames, including full paths, 'known
 =cut
 
 use Moose;
+use Cwd;
+use File::Temp;
+use File::Copy;
+use File::Basename;
 use Try::Tiny;
 use Bio::SeqIO;
 use Bio::Pipeline::Comparison::Exceptions;
 use Vcf;
 
-has 'known_variant_filenames'    => ( is => 'ro', isa => 'ArrayRef', required => 1 );
-has 'observed_variant_filenames' => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+has 'known_variant_filenames'    => ( is => 'rw', isa => 'ArrayRef', required => 1 );
+has 'observed_variant_filenames' => ( is => 'rw', isa => 'ArrayRef', required => 1 );
+
+has 'bgzip_exec' => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::Executable', default => 'bgzip' );
+has 'tabix_exec' => ( is => 'ro', isa => 'Bio::Pipeline::Comparison::Executable', default => 'tabix' );
 
 has 'known_to_observed_mappings' => ( is => 'ro', isa => 'ArrayRef', lazy => 1, builder => '_build_known_to_observed_mappings' );
+
+has '_temp_directory_obj' => ( is => 'ro', isa => 'File::Temp::Dir', lazy     => 1, builder => '_build__temp_directory_obj' );
+has '_temp_directory'     => ( is => 'ro', isa => 'Str', lazy     => 1, builder => '_build__temp_directory' );
+has 'debug'               => ( is => 'ro', isa => 'Bool', default => 0);
+
+sub _build__temp_directory_obj {
+    my ($self) = @_;
+    
+    my $cleanup = 1;
+    $cleanup = 0 if($self->debug == 1);
+    File::Temp->newdir( CLEANUP => $cleanup , DIR => getcwd() );
+}
+
+sub _build__temp_directory {
+    my ($self) = @_;
+    $self->_temp_directory_obj->dirname();
+}
 
 sub _build_known_to_observed_mappings
 {
@@ -65,8 +89,10 @@ sub _validate_input_files
    my ($self) = @_;
    $self->_check_files_exist($self->known_variant_filenames);
    $self->_check_files_exist($self->observed_variant_filenames);
-   $self->_check_varient_files_are_valid($self->known_variant_filenames);
-   $self->_check_varient_files_are_valid($self->observed_variant_filenames);
+   my $checked_known_variant_filenames = $self->_check_variant_files_are_valid($self->known_variant_filenames);
+   $self->known_variant_filenames($checked_known_variant_filenames);
+   my $checked_observed_variant_filenames = $self->_check_variant_files_are_valid($self->observed_variant_filenames);
+   $self->observed_variant_filenames($checked_observed_variant_filenames);
    1;
 }
 
@@ -82,16 +108,19 @@ sub _check_files_exist
   }
 }
 
-sub _check_varient_files_are_valid
+sub _check_variant_files_are_valid
 {
   my ($self, $filenames) = @_;
+  my @checked_variant_filenames;
   for my $filename (@{$filenames})
   {
-     $self->_check_varient_file_is_valid($filename);
+     my $checked_variant_filename = $self->_check_variant_file_is_valid($filename);
+     push(@checked_variant_filenames, $checked_variant_filename);
   }
+  return \@checked_variant_filenames;
 }
 
-sub _check_varient_file_is_valid
+sub _can_variant_file_be_opened
 {
   my ($self, $filename) = @_;
   try{
@@ -100,10 +129,52 @@ sub _check_varient_file_is_valid
   }
   catch
   {
-    Bio::Pipeline::Comparison::Exceptions::InvalidTabixFile->throw( error => "The VCF file $filename needs to be compressed with bgzip and indexed with tabix.");
+    return 0;
   };
-  
+  return 1;
 }
+
+sub _check_variant_file_is_valid
+{
+  my ($self, $filename) = @_;
+
+  if($self->_can_variant_file_be_opened($filename) == 0)
+  {
+    # try and fix invalid variant files
+    my $compressed_file = $self->_compress_variant_file($filename);
+    $self->_create_tabix_file($compressed_file);
+    
+    if($self->_can_variant_file_be_opened($compressed_file) == 0)
+    {
+       Bio::Pipeline::Comparison::Exceptions::InvalidTabixFile->throw( error => "Varient file needs to be compressed with bgzip and indexed with tabix: $filename");
+    }
+    return $compressed_file;
+  }
+  
+  return $filename;
+}
+
+sub _create_tabix_file
+{
+  my ($self, $filename) = @_;
+  my $cmd = join(' ',($self->tabix_exec, "-p vcf", "-f",$filename));
+  system($cmd);
+}
+
+sub _compress_variant_file
+{
+  my ($self, $filename) = @_;
+  if(! $filename =~ /gz$/)
+  {
+    my ( $base_filename, $directories, $suffix ) = fileparse( $filename);
+    $intermediate_output_name = join('/',($self->_temp_directory, $base_filename.int(rand(1000)).'.gz'));
+    system(join(' ', ($self->bgzip_exec, '-c', $filename, '>', $intermediate_output_name)));
+    return $intermediate_output_name;
+  }
+  return $filename;
+}
+
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
