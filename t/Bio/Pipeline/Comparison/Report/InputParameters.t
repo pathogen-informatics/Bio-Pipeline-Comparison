@@ -21,8 +21,12 @@ is_deeply($obj->known_to_observed_mappings,
   'correct pairs returned');
 
 throws_ok( sub{ $obj->_check_files_exist(['file_doesnt_exist'])}, qr/Cant access the file/, 'File doesnt exist so throw an ' );
-throws_ok( sub{ $obj->_check_varient_file_is_valid('t/data/expected_reference_only_CA.fa')}, qr/needs to be compressed with bgzip and indexed with tabix/, 'invalid file thows an error');
 
+is($obj->_temp_directory.'/reference_uncompressed.vcf.gz', $obj->_check_variant_file_is_valid('t/data/reference_uncompressed.vcf'), 'Reference file should be compressed if not already');
 
-
+ok(my $interim_variant_filename = $obj->_check_variant_file_is_valid('t/data/reference_without_tabix.vcf.gz'), 'tabix should be created');
+ok((-e $interim_variant_filename.'.tbi'), 'Tabix file created as needed');
+ 
+unlink("t/data/reference_without_tabix.vcf.gz.tbi");
+ 
 done_testing();

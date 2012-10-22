@@ -28,6 +28,7 @@ use File::Copy;
 use File::Basename;
 use Try::Tiny;
 use Bio::SeqIO;
+use Bio::Pipeline::Comparison::Types;
 use Bio::Pipeline::Comparison::Exceptions;
 use Vcf;
 
@@ -123,21 +124,22 @@ sub _check_variant_files_are_valid
 sub _can_variant_file_be_opened
 {
   my ($self, $filename) = @_;
+  my $return_value = 1;
   try{
     my $vcf = Vcf->new(file => $filename); 
     $vcf->get_chromosomes();
   }
   catch
   {
-    return 0;
+    $return_value = 0;
   };
-  return 1;
+  return $return_value;
 }
 
 sub _check_variant_file_is_valid
 {
   my ($self, $filename) = @_;
-
+    
   if($self->_can_variant_file_be_opened($filename) == 0)
   {
     # try and fix invalid variant files
@@ -164,10 +166,11 @@ sub _create_tabix_file
 sub _compress_variant_file
 {
   my ($self, $filename) = @_;
-  if(! $filename =~ /gz$/)
+
+  unless( $filename =~ /gz$/)
   {
     my ( $base_filename, $directories, $suffix ) = fileparse( $filename);
-    $intermediate_output_name = join('/',($self->_temp_directory, $base_filename.int(rand(1000)).'.gz'));
+    my $intermediate_output_name = join('/',($self->_temp_directory, $base_filename.'.gz'));
     system(join(' ', ($self->bgzip_exec, '-c', $filename, '>', $intermediate_output_name)));
     return $intermediate_output_name;
   }
