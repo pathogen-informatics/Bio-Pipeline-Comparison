@@ -1,6 +1,6 @@
 
 package Bio::Pipeline::Comparison;
-# ABSTRACT: Compare a pipeline
+# ABSTRACT: Comparative assesment of variant calling (CAVar)
 use Moose;
 
 no Moose;
