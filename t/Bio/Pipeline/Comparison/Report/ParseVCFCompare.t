@@ -15,7 +15,7 @@ ok((my $obj = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
       observed_variant_filename => 't/data/no_overlap/observed_no_overlap.vcf.gz',
       'vcf_compare_exec'        => abs_path('bin/vcf-compare')
       )
-    ), 'Initialise all variants the same');
+    ), 'Initialise no overlap');
 my @expected_no_overlap =  (
           {
             'files_to_percentage' => [
@@ -37,7 +37,34 @@ my @expected_no_overlap =  (
           }
         );
 is_deeply($obj->_raw_venn_diagram_results, \@expected_no_overlap, 'Results from no overlap' );
+is($obj->number_of_false_positives, 5 ,'no overlap fp');
+is($obj->number_of_false_negatives, 5 ,'no overlap fn');
 
+
+ok((my $obj_perfect = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
+      known_variant_filename    => 't/data/perfect/known_perfect.vcf.gz', 
+      observed_variant_filename => 't/data/perfect/observed_perfect.vcf.gz',
+      'vcf_compare_exec'        => abs_path('bin/vcf-compare')
+      )
+    ), 'Initialise all variants the same');
+my @expected_perfect =  (
+  {
+    'files_to_percentage' => [
+                               {
+                                 'file_name' => 't/data/perfect/known_perfect.vcf.gz',
+                                 'percentage' => '100.0'
+                               },
+                               {
+                                 'file_name' => 't/data/perfect/observed_perfect.vcf.gz',
+                                 'percentage' => '100.0'
+                               }
+                             ],
+    'number_of_sites' => '5'
+  }
+);
+is_deeply($obj_perfect->_raw_venn_diagram_results, \@expected_perfect, 'Results from perfect results' );
+is($obj_perfect->number_of_false_positives, 0 ,'perfect fp');
+is($obj_perfect->number_of_false_negatives, 0 ,'perfect fn');
 
 
 ok((my $obj_fn = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
@@ -73,7 +100,8 @@ my @expected_fn =
 );
 
 is_deeply($obj_fn->_raw_venn_diagram_results, \@expected_fn, 'Results from false negatives' );
-
+is($obj_fn->number_of_false_positives, 0 ,'only false negatives fp');
+is($obj_fn->number_of_false_negatives, 2 ,'only false negatives fn');
 
 
 ok((my $obj_fp = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
@@ -109,7 +137,8 @@ my @expected_fp =
 );
 
 is_deeply($obj_fp->_raw_venn_diagram_results, \@expected_fp, 'Results from false positives' );
-
+is($obj_fp->number_of_false_positives, 1 ,'only false positives fp');
+is($obj_fp->number_of_false_negatives, 0 ,'only false positives fn');
 
 
 
@@ -155,7 +184,8 @@ my @expected_fp_and_fn =
 );
 
 is_deeply($obj_fp_and_fn->_raw_venn_diagram_results, \@expected_fp_and_fn, 'Results from false positives and false negatives' );
-
+is($obj_fp_and_fn->number_of_false_positives, 1 ,'false positives and false negatives fp');
+is($obj_fp_and_fn->number_of_false_negatives, 1 ,'false positives and false negatives fn');
 
 
 done_testing();
