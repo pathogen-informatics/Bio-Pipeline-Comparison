@@ -18,6 +18,7 @@ BEGIN { unshift( @INC, '../lib' ) }
 use Moose;
 use Getopt::Long;
 use Bio::Pipeline::Comparison;
+use Bio::Pipeline::Comparison::Report::Overview;
 use Bio::Pipeline::Comparison::Report::InputParameters;
 
 my ($known_variants, $observed_variants, $help );
@@ -60,21 +61,16 @@ USAGE
 
 
 my $input_parameters = Bio::Pipeline::Comparison::Report::InputParameters->new(
-  known_variant_filenames => $known_variants, 
+  known_variant_filenames    => $known_variants, 
   observed_variant_filenames => $observed_variants
 );
 $input_parameters->known_to_observed_mappings();
 
-# compare each pair with vcf-compare
-# save the output stats somewhere
-# merge the results 
-# report on false positives and false negatives
-# 
+my $comparison_overview = Bio::Pipeline::Comparison::Report::Overview->new(
+  known_to_observed_mappings => $input_parameters->known_to_observed_mappings()
+);
 
-
-
-
-
-
+print "FP\t".$comparison_overview->total_false_positives;
+print "FN\t".$comparison_overview->total_false_negatives;
 
 
