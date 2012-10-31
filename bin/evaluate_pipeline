@@ -18,14 +18,15 @@ BEGIN { unshift( @INC, '../lib' ) }
 use Moose;
 use Getopt::Long;
 use Bio::Pipeline::Comparison;
+use Bio::Pipeline::Comparison::Report::Overview;
 use Bio::Pipeline::Comparison::Report::InputParameters;
 
 my ($known_variants, $observed_variants, $help );
 
 GetOptions(
-    'k|known_variants=s@'      => \$known_variants,
-    'o|observed_variants=s@'   => \$observed_variants,
-    'h|help'                => \$help,
+    'k|known_variants=s@'    => \$known_variants,
+    'o|observed_variants=s@' => \$observed_variants,
+    'h|help'                 => \$help,
 );
 
 # check all the input files exist
@@ -39,7 +40,7 @@ for my $input_file (@{$observed_variants})
   $input_files_exist = 0 unless( -e $input_file);
 }
 
-( ($input_files_exist == 1) && !$help ) or die <<USAGE;
+( ($input_files_exist == 1) && (@{$observed_variants} > 0) && (@{$known_variants} > 0) && !$help ) or die <<USAGE;
 Usage: evaluate_pipeline [options]
 Take in a VCFs of known variants and observed variants, then output a report.
 
@@ -60,9 +61,16 @@ USAGE
 
 
 my $input_parameters = Bio::Pipeline::Comparison::Report::InputParameters->new(
-  known_variant_filenames => $known_variants, 
+  known_variant_filenames    => $known_variants, 
   observed_variant_filenames => $observed_variants
 );
 $input_parameters->known_to_observed_mappings();
+
+my $comparison_overview = Bio::Pipeline::Comparison::Report::Overview->new(
+  known_to_observed_mappings => $input_parameters->known_to_observed_mappings()
+);
+
+print "FP\t".$comparison_overview->total_false_positives;
+print "FN\t".$comparison_overview->total_false_negatives;
 
 

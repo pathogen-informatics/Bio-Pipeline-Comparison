@@ -1,6 +1,3 @@
 Prerequisites:
 
 tabix & bgzip - http://samtools.sourceforge.net/tabix.shtml
-Vcf.pm - http://vcftools.sourceforge.net/perl_module.html#Vcf.pm
-
-gnuplot
