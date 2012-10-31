@@ -76,7 +76,7 @@ sub _introduce_snps {
         my $evolved_base = $self->_evolve_base( substr( $evolved_sequence, $i, 1 ) );
         substr( $evolved_sequence, $i, 1 ) = $evolved_base;
         if ( $original_base ne $evolved_base ) {
-            $self->_vcf_writer->add_snp( $i, $original_base, $evolved_base );
+            $self->_vcf_writer->add_snp( $i, $original_base, $evolved_base, $sequence_obj-> display_id);
         }
     }
 

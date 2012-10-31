@@ -8,8 +8,8 @@ Create a VCF with the differences between a reference and a single evolved genom
 
 use Bio::Pipeline::Comparison::Generate::VCFWriter;
 my $obj = Bio::Pipeline::Comparison::Generate::VCFWriter->new(output_filename => 'my_snps.vcf.gz');
-$obj->add_snp(1234, 'C', 'A');
-$obj->add_snp(1234, 'T', 'A');
+$obj->add_snp(1234, 'C', 'A', 'Chr1');
+$obj->add_snp(1234, 'T', 'A', 'Chr1'));
 $obj->create_file();
 
 =method add_snp
@@ -81,7 +81,7 @@ sub _create_index {
 
 
 sub add_snp {
-    my ( $self, $position, $reference_base, $base ) = @_;
+    my ( $self, $position, $reference_base, $base, $chromosome ) = @_;
     
     #position here should be from the evolved reference (update when indels included).
     my %snp;
@@ -89,7 +89,7 @@ sub add_snp {
     $snp{ALT}    = [$reference_base];
     $snp{REF}    = $base;
     $snp{ID}     = '.';
-    $snp{CHROM}  = 1;
+    $snp{CHROM}  = $chromosome;
     $snp{QUAL}   = 1;
 
     push( @{ $self->_vcf_lines }, \%snp );
