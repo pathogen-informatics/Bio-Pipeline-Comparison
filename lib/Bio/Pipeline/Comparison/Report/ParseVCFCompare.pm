@@ -11,8 +11,10 @@ my $obj = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
   known_variant_filename    => 'abc.1.vcf.gz',
   observed_variant_filename => 'efg.1.vcf.gz'
 );
-$obj->number_of_false_positives
-$obj->number_of_false_negatives
+$obj->number_of_false_positives;
+$obj->number_of_false_negatives;
+$obj->number_of_known_variants;
+$obj->number_of_observed_variants;
 
 =head1 SEE ALSO
 
@@ -57,6 +59,43 @@ sub number_of_false_negatives
   return $self->_number_of_uniques_for_filename($self->known_variant_filename);
 }
 
+
+sub number_of_known_variants
+{
+  my ($self) = @_;
+  $self->_number_of_variants($self->known_variant_filename);
+}
+
+sub number_of_observed_variants
+{
+  my ($self) = @_;
+  $self->_number_of_variants($self->observed_variant_filename);
+}
+
+sub _number_of_variants
+{
+  my ($self,$filename) = @_;
+  my $number_of_variants = 0;
+  for my $row_results (@{$self->_raw_venn_diagram_results})
+  {
+    my $number_of_files_with_overlap = @{$row_results->{files_to_percentage}};
+    
+    if($number_of_files_with_overlap > 0)
+    {
+      for(my $i = 0; $i < $number_of_files_with_overlap; $i++ )
+      {
+        if(defined($row_results->{files_to_percentage}->[$1]->{file_name})
+           && $row_results->{files_to_percentage}->[$1]->{file_name} eq $filename)
+        {
+          $number_of_variants +=$row_results->{number_of_sites};
+          last;
+        }
+      }
+    }
+  }
+  return $number_of_variants;
+}
+
 sub _number_of_uniques_for_filename
 {
   my ($self, $filename) = @_;
@@ -97,7 +136,6 @@ sub _build__raw_venn_diagram_results
   while(<$fh>)
   {
     my $line = $_;
-
     if( $line =~ m/$vd_regex/)
     {
       my %vd_results;

@@ -40,7 +40,7 @@ for my $input_file (@{$observed_variants})
   $input_files_exist = 0 unless( -e $input_file);
 }
 
-( ($input_files_exist == 1) && !$help ) or die <<USAGE;
+( ($input_files_exist == 1) && (@{$observed_variants} > 0) && (@{$known_variants} > 0) && !$help ) or die <<USAGE;
 Usage: evaluate_pipeline [options]
 Take in a VCFs of known variants and observed variants, then output a report.
 

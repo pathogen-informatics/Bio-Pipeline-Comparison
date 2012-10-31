@@ -38,8 +38,8 @@ ok((my $obj = Bio::Pipeline::Comparison::Report::Overview->new(
   'vcf_compare_exec'            => abs_path('bin/vcf-compare')
 )),'initialise the overview for vcf comparisons');
 
-is($obj->total_false_positives,7,'Total false positives');
-is($obj->total_false_negatives,8,'Total false negatives');
+is($obj->total_false_positives, 7, 'Total false positives');
+is($obj->total_false_negatives, 8, 'Total false negatives');
 
 done_testing();
 
