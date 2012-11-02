@@ -6,11 +6,11 @@ package Bio::Pipeline::Comparison::Generate::VCFWriter;
 
 Create a VCF with the differences between a reference and a single evolved genome
 
-use Bio::Pipeline::Comparison::Generate::VCFWriter;
-my $obj = Bio::Pipeline::Comparison::Generate::VCFWriter->new(output_filename => 'my_snps.vcf.gz');
-$obj->add_snp(1234, 'C', 'A', 'Chr1');
-$obj->add_snp(1234, 'T', 'A', 'Chr1'));
-$obj->create_file();
+    use Bio::Pipeline::Comparison::Generate::VCFWriter;
+    my $obj = Bio::Pipeline::Comparison::Generate::VCFWriter->new(output_filename => 'my_snps.vcf.gz');
+    $obj->add_snp(1234, 'C', 'A', 'Chr1');
+    $obj->add_snp(1234, 'T', 'A', 'Chr1'));
+    $obj->create_file();
 
 =method add_snp
 

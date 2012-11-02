@@ -8,12 +8,12 @@ FaSlice.pm.  Module for cached access to fasta sequences, employs samtools faidx
 
 =head1 SYNOPSIS
 
-use FaSlice;
-
-my $fa = FaSlice->new(file=>'ref.fa');
-$fa->get_base(1,12345);
-$fa->get_slice(1,12345,54321);
-
+   use FaSlice;
+   
+   my $fa = FaSlice->new(file=>'ref.fa');
+   $fa->get_base(1,12345);
+   $fa->get_slice(1,12345,54321);
+   
 =cut
 
 

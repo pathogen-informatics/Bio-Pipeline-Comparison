@@ -6,14 +6,14 @@ package Bio::Pipeline::Comparison::Generate::EvolvedSet;
 
 Take in a reference genome and evolve it multiple times to produce multiple FASTA files and VCF files containing the differences to the original reference.
 
-use Bio::Pipeline::Comparison::Generate::EvolvedSet;
-my $obj = Bio::Pipeline::Comparison::Generate::EvolvedSet->new(
-  input_filename   => 'reference.fa', 
-  output_directory => 'genus_species',
-  number_of_genomes => 100,
-);
-$obj->evolve;
-$obj->create_archive;
+    use Bio::Pipeline::Comparison::Generate::EvolvedSet;
+    my $obj = Bio::Pipeline::Comparison::Generate::EvolvedSet->new(
+      input_filename   => 'reference.fa', 
+      output_directory => 'genus_species',
+      number_of_genomes => 100,
+    );
+    $obj->evolve;
+    $obj->create_archive;
 
 =method number_of_genomes
 
@@ -68,7 +68,7 @@ sub _build__input_filename_base {
 sub _build_output_directory {
     my ($self) = @_;
     my ( $base_filename, $directories, $suffix ) = fileparse( $self->input_filename, qr/\.[^.]*/ );
-    my $output_directory = $directories . $base_filename;
+    my $output_directory =  $base_filename;
     make_path($output_directory) unless ( -d $output_directory );
     return $output_directory;
 }

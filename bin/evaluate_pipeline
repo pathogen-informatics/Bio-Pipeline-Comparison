@@ -69,8 +69,6 @@ $input_parameters->known_to_observed_mappings();
 my $comparison_overview = Bio::Pipeline::Comparison::Report::Overview->new(
   known_to_observed_mappings => $input_parameters->known_to_observed_mappings()
 );
-
-print "FP\t".$comparison_overview->total_false_positives;
-print "FN\t".$comparison_overview->total_false_negatives;
+print $comparison_overview->report_to_str();
 
 

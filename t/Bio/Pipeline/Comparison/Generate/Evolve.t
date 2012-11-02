@@ -35,9 +35,9 @@ compare_files( 't/data/reference_only_CA.fa.evolved.fa.vcf.gz', 't/data/expected
 
 unlink('t/data/reference.fa.evolved.fa');
 unlink('t/data/reference.fa.evolved.fa.vcf.gz');
+unlink('t/data/reference.fa.evolved.fa.vcf.gz.tbi');
 unlink('t/data/reference_only_CA.fa.evolved.fa');
 unlink('t/data/reference_only_CA.fa.evolved.fa.vcf.gz');
-unlink('t/data/reference.fa.evolved.fa.vcf.gz.tbi');
 unlink('t/data/reference_only_CA.fa.evolved.fa.vcf.gz.tbi');
 
 done_testing();
