@@ -6,10 +6,10 @@ package Bio::Pipeline::Comparison::Generate::Evolve;
 
 Take in a reference genome and evolve it.
 
-use Bio::Pipeline::Comparison::Generate::Evolve;
-my $obj = Bio::Pipeline::Comparison::Generate::Evolve->new(input_filename => 'reference.fa');
-$obj->evolve;
-$obj->output_filename;
+    use Bio::Pipeline::Comparison::Generate::Evolve;
+    my $obj = Bio::Pipeline::Comparison::Generate::Evolve->new(input_filename => 'reference.fa');
+    $obj->evolve;
+    $obj->output_filename;
 
 =method evolve
 

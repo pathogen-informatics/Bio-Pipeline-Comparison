@@ -6,9 +6,12 @@ package Bio::Pipeline::Comparison::Report::InputParameters;
 
 Take in a set of input parameters for the evalute pipeline functionality, validate them, then manipulate them into a usable set.
 
-use Bio::Pipeline::Comparison::Report::InputParameters;
-my $obj = Bio::Pipeline::Comparison::Report::InputParameters->new(known_variant_filenames => ['abc.1.vcf.gz'], observed_variant_filenames => ['efg.1.vcf.gz']);
-$obj->known_to_observed_mappings
+    use Bio::Pipeline::Comparison::Report::InputParameters;
+    my $obj = Bio::Pipeline::Comparison::Report::InputParameters->new(
+      known_variant_filenames => ['abc.1.vcf.gz'], 
+      observed_variant_filenames => ['efg.1.vcf.gz']
+    );
+    $obj->known_to_observed_mappings
 
 =method known_to_observed_mappings
 

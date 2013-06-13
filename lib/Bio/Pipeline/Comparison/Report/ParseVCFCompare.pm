@@ -6,15 +6,15 @@ package Bio::Pipeline::Comparison::Report::ParseVCFCompare;
 
 Take in the output of VCF compare and return details about intersection of variants.
 
-use Bio::Pipeline::Comparison::Report::ParseVCFCompare;
-my $obj = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
-  known_variant_filename    => 'abc.1.vcf.gz',
-  observed_variant_filename => 'efg.1.vcf.gz'
-);
-$obj->number_of_false_positives;
-$obj->number_of_false_negatives;
-$obj->number_of_known_variants;
-$obj->number_of_observed_variants;
+    use Bio::Pipeline::Comparison::Report::ParseVCFCompare;
+    my $obj = Bio::Pipeline::Comparison::Report::ParseVCFCompare->new(
+      known_variant_filename    => 'abc.1.vcf.gz',
+      observed_variant_filename => 'efg.1.vcf.gz'
+    );
+    $obj->number_of_false_positives;
+    $obj->number_of_false_negatives;
+    $obj->number_of_known_variants;
+    $obj->number_of_observed_variants;
 
 =head1 SEE ALSO
 
@@ -84,8 +84,8 @@ sub _number_of_variants
     {
       for(my $i = 0; $i < $number_of_files_with_overlap; $i++ )
       {
-        if(defined($row_results->{files_to_percentage}->[$1]->{file_name})
-           && $row_results->{files_to_percentage}->[$1]->{file_name} eq $filename)
+        if(defined($row_results->{files_to_percentage}->[$i]->{file_name})
+           && $row_results->{files_to_percentage}->[$i]->{file_name} eq $filename)
         {
           $number_of_variants +=$row_results->{number_of_sites};
           last;
