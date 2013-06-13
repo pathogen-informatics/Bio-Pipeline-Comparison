@@ -85,7 +85,7 @@ sub add_snp {
     
     #position here should be from the evolved reference (update when indels included).
     my %snp;
-    $snp{POS}    = $position;
+    $snp{POS}    = $position +1;
     $snp{ALT}    = [$reference_base];
     $snp{REF}    = $base;
     $snp{ID}     = '.';
